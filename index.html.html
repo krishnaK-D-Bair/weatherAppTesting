@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Document</title>
+</head>
+
+<body>
+
+     <form method="get" id="form">
+          <label for="place">Input Place Name</label>
+          <input type="text" id="place" name="place" placeholder="Enter The Place Name">
+          <button type="submit">Submit</button>
+</form>
+
+<div id="div"></div>
+
+
+
+
+
+
+               <script>
+                    let apiKey = "d8b1ad9e8fd9be55c172fbd72ecbb2dd"
+                    document.querySelector("#form").addEventListener("submit", (e) => {
+                         e.preventDefault()
+                        const place = document.querySelector("#place").value
+                         weatherData(place)
+                    })
+
+
+
+
+
+                    async function weatherData(place) {
+                         try {
+
+                              if (!place.trim()) {
+                              alert("Please enter a location");
+                              return;
+                              }
+
+                              const res = await fetch(`https://api.weatherstack.com/current?access_key=${apiKey}&query=${place}`)
+                              const jsonRes = await res.json()
+                              console.log(jsonRes)
+
+                              //target the html div
+                              let mainDiv = document.querySelector('#div')
+                              
+                               if (jsonRes.success === false) {
+                              mainDiv.innerHTML = `<p>Location not found</p>`;
+                              return;
+                              }
+
+                              mainDiv.innerHTML = ''
+                              generalInfo(jsonRes, mainDiv)
+                              airQuality(jsonRes, mainDiv)
+
+                         } catch (error) {
+                              console.log(error)
+                         }
+                    }
+
+                    function generalInfo(jsonRes, mainDiv) {
+                         let weatherData_div = document.createElement("div")
+                         weatherData_div.className = "general_Info"
+                         let weatherData = jsonRes.current
+                         let locationInfo = jsonRes.location
+
+
+                         weatherData_div.innerHTML = `
+                 <h1> Weather Information </h1>
+                 <p><strong>Location : </strong>${locationInfo.name} , ${locationInfo.region} , ${locationInfo.country}</p>
+                 <img src="${weatherData.weather_icons[0]}" alt="img not found">
+                <p><strong>Temperature : </strong>${weatherData.temperature} feelslike : ${weatherData.feelslike}</p>
+                <p><strong>Humidity : </strong>${weatherData.humidity}</p>
+                <p><strong>Weather Descriptions - </strong>${weatherData.weather_descriptions[0]}</p>
+                <p><strong>Wind Speed : </strong>${weatherData.wind_speed}Km/h</p>
+                <p><strong>Wind Direction : </strong>${weatherData.wind_dir}</p>
+                <p><strong>Sunrise : </strong>${weatherData.astro.sunrise}</p>
+                <p><strong>Sunset : </strong>${weatherData.astro.sunset}</p>
+                
+                `
+
+
+                         mainDiv.appendChild(weatherData_div)
+                    }
+
+
+                    function airQuality(jsonRes, mainDiv) {
+                         // create and append
+                         let air_quality_Div = document.createElement("div")
+                         air_quality_Div.className = "air_quality"
+                         let air_quality = jsonRes.current.air_quality
+                         //c3 value
+                         let o3 = Number(air_quality.o3)
+                         let o3_text = ''
+
+                         if (o3 <= 50) {
+                              o3_text = 'Within acceptable range. Good for health. 🟢 Good'
+                         } else if (o3 <= 100) {
+                              o3_text = "Acceptable, but sensitive individuals should be cautious. 🟡 Moderate"
+                         } else if (o3 <= 150) {
+                              o3_text = "Harmful for sensitive groups. Outdoor activity should be reduced. 🟠 Unhealthy (Sensitive)"
+                         } else if (o3 <= 200) {
+                              o3_text = "Bad for health. Avoid outdoor activities. 🔴 Unhealthy"
+                         } else {
+                              o3_text = "Very dangerous for health. Stay indoors. 🟣 Very Bad / Dangerous"
+                         }
+
+                         //co value
+                         let co = Math.ceil(air_quality.co)
+                         let co_text = ''
+
+                         if (co <= 1000) {
+                              co_text = 'Within acceptable range. Good for health. 🟢 Good'
+                         } else if (co <= 2000) {
+                              co_text = "Acceptable, but sensitive individuals should be cautious. 🟡 Moderate"
+                         } else if (co <= 10000) {
+                              co_text = "Harmful for sensitive groups. Outdoor activity should be reduced. 🟠 Unhealthy (Sensitive)"
+                         } else if (co <= 17000) {
+                              co_text = "Bad for health. Avoid outdoor activities. 🔴 Unhealthy"
+                         } else {
+                              co_text = "Very dangerous for health. Stay indoors. 🟣 Very Bad / Dangerous"
+                         }
+
+                         //no2
+                         let no2 = Math.ceil(air_quality.no2)
+                         let no2_text = ''
+
+                         if (no2 <= 40) {
+                              no2_text = 'Safe for everyone. 🟢 Good'
+                         } else if (no2 <= 80) {
+                              no2_text = "Mild irritation for sensitive people. 🟡 Moderate"
+                         } else if (no2 <= 180) {
+                              no2_text = "Breathing issues for asthma, elderly. 🟠 Unhealthy (Sensitive)"
+                         } else if (no2 <= 280) {
+                              no2_text = "Lung irritation for everyone. 🔴 Unhealthy"
+                         } else {
+                              no2_text = "Serious respiratory risk. 🟣 Very Bad / Dangerous"
+                         }
+
+                         //pm2
+                         let pm2 = Math.ceil(air_quality.pm2_5)
+                         let pm2_text = ''
+
+                         if (pm2 <= 15) {
+                              pm2_text = 'Safe for everyone. 🟢 Good'
+                         } else if (pm2 <= 30) {
+                              pm2_text = "Mild irritation for sensitive people. 🟡 Moderate"
+                         } else if (pm2 <= 60) {
+                              pm2_text = "Breathing issues for asthma, elderly. 🟠 Unhealthy (Sensitive)"
+                         } else if (pm2 <= 120) {
+                              pm2_text = "Lung irritation for everyone. 🔴 Unhealthy"
+                         } else {
+                              pm2_text = "Serious respiratory risk. 🟣 Very Bad / Dangerous"
+                         }
+
+                         // pm10-----------------
+                         let pm10 = Math.ceil(air_quality.pm10)
+                         let pm10_text = ''
+
+                         if (pm10 <= 50) {
+                              pm10_text = 'Safe for everyone. 🟢 Good'
+                         } else if (pm10 <= 100) {
+                              pm10_text = "Mild irritation for sensitive people. 🟡 Moderate"
+                         } else if (pm10 <= 250) {
+                              pm10_text = "Breathing issues for asthma, elderly. 🟠 Unhealthy (Sensitive)"
+                         } else if (pm10 <= 350) {
+                              pm10_text = "Lung irritation for everyone. 🔴 Unhealthy"
+                         } else {
+                              pm10_text = "Serious respiratory risk. 🟣 Very Bad / Dangerous"
+                         }
+
+                         //🟡 SO₂ — Sulfur Dioxide
+                         let so2 = Math.ceil(air_quality.so2)
+                         let so2_text = ''
+
+                         if (so2 <= 40) {
+                              so2_text = 'Safe for everyone. 🟢 Good'
+                         } else if (so2 <= 80) {
+                              so2_text = "Mild irritation for sensitive people. 🟡 Moderate"
+                         } else if (so2 <= 380) {
+                              so2_text = "Breathing issues for asthma, elderly. 🟠 Unhealthy (Sensitive)"
+                         } else if (so2 <= 800) {
+                              so2_text = "Lung irritation for everyone. 🔴 Unhealthy"
+                         } else {
+                              so2_text = "Serious respiratory risk. 🟣 Very Bad / Dangerous"
+                         }
+
+
+                         //US-EPA Index (United States Environmental Protection Agency)
+                         let us_epa = Number(air_quality["us-epa-index"])
+                         let us_epa_text = ''
+
+                         if (us_epa === 1) {
+                              us_epa_text = "🟢 Good"
+                         } else if (us_epa === 2) {
+                              us_epa_text = "🟡 Moderate"
+                         } else if (us_epa === 3) {
+                              us_epa_text = "🟠 Unhealthy (Sensitive)"
+                         } else if (us_epa === 4) {
+                              us_epa_text = "🔴 Unhealthy"
+                         } else if (us_epa === 5) {
+                              us_epa_text = "🟣 Very Unhealthy"
+                         } else {
+                              us_epa_text = "☠️ Hazardous"
+                         }
+
+
+
+                         // insert value in air_quality
+                         air_quality_Div.innerHTML = `
+                <h1> Air Quality </h1>
+                <p><strong>O₃ — Ozone (Ground-level) - </strong>${o3}µg/m³ - ${o3_text}</p>
+                <p><strong>CO — Carbon Monoxide - </strong>${co}µg/m³ - ${co_text}</p>
+                <p><strong>NO₂ — Nitrogen Dioxide - </strong>${no2}µg/m³ - ${no2_text}</p>
+                <p><strong>PM2.5 — Fine Particulate Matter (≤2.5µm) - </strong>${pm2}µg/m³ - ${pm2_text}</p>
+                <p><strong>PM10 — Particulate Matter (≤10µm) - </strong>${pm10}µg/m³ - ${pm10_text}</p>
+                <p><strong>SO₂ — Sulfur Dioxide - </strong>${so2}µg/m³ - ${so2_text}</p>
+                <p><strong>US-EPA Index - </strong>${us_epa}</p>
+                <p><strong> Health Status: ${us_epa_text} </p>
+
+                `
+
+
+
+
+                         mainDiv.appendChild(air_quality_Div)
+
+                    }
+
+               </script>
+</body>
+
+</html>
